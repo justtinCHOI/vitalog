@@ -31,7 +31,9 @@ public class ChatController {
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<ChatAnalysisResponse> analyzeChats(@PathVariable Long projectId) {
-        return ResponseEntity.ok(chatService.analyzeChats(projectId));
+    public ResponseEntity<ChatAnalysisResponse> analyzeChats(
+            @PathVariable Long projectId,
+            @RequestParam(value = "language", required = false) String language) {
+        return ResponseEntity.ok(chatService.analyzeChats(projectId, language));
     }
 } 

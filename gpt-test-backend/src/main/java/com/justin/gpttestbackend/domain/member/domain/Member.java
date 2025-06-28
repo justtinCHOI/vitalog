@@ -2,6 +2,7 @@ package com.justin.gpttestbackend.domain.member.domain;
 
 import com.justin.gpttestbackend.domain.common.model.BaseTimeEntity;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -36,8 +37,10 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private Role role;
 
-    @Setter
+    @Column(unique = true)
     private String invitationCode;
+
+    private LocalDateTime invitationCodeExpiresAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -62,5 +65,14 @@ public class Member extends BaseTimeEntity {
     public void addPartner(Member partner) {
         this.partners.add(partner);
         partner.getPatients().add(this);
+    }
+
+    public void setInvitationCode(String invitationCode) {
+        this.invitationCode = invitationCode;
+        if (invitationCode != null) {
+            this.invitationCodeExpiresAt = LocalDateTime.now().plusMinutes(10);
+        } else {
+            this.invitationCodeExpiresAt = null;
+        }
     }
 } 

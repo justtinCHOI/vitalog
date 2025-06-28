@@ -1,0 +1,13 @@
+{
+    "login": {
+        "title": "로그인",
+        "description": "계정에 로그인하려면 아래에 사용자 이름을 입력하세요.",
+        "usernameLabel": "사용자 이름",
+        "usernamePlaceholder": "사용자 이름",
+        "passwordLabel": "비밀번호",
+        "passwordPlaceholder": "••••••••",
+        "signInButton": "로그인",
+        "signUpPrompt": "계정이 없으신가요?",
+        "signUpLink": "가입하기"
+    }
+} 

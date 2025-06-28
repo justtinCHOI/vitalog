@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 import { useLoginMutation } from '@/shared/hook/mutation/useLoginMutation';
 import { loginSchema } from '@/shared/schemas/auth';
@@ -15,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
     const loginMutation = useLoginMutation();
+    const { t } = useTranslation();
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -32,8 +34,8 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-background">
             <Card className="w-full max-w-sm">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Login</CardTitle>
-                    <CardDescription>Enter your username below to login to your account.</CardDescription>
+                    <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
+                    <CardDescription>{t('login.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -43,9 +45,9 @@ export default function LoginPage() {
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Username</FormLabel>
+                                        <FormLabel>{t('login.usernameLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="your_username" {...field} />
+                                            <Input placeholder={t('login.usernamePlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -56,9 +58,9 @@ export default function LoginPage() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t('login.passwordLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="••••••••" {...field} />
+                                            <Input type="password" placeholder={t('login.passwordPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -66,16 +68,16 @@ export default function LoginPage() {
                             />
                             <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
                                 {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Sign In
+                                {t('login.signInButton')}
                             </Button>
                         </form>
                     </Form>
                 </CardContent>
                 <CardFooter>
                     <div className="mt-4 text-center text-sm">
-                        Don&apos;t have an account?{' '}
+                        {t('login.signUpPrompt')}{' '}
                         <Link href="/signup" className="underline">
-                            Sign up
+                            {t('login.signUpLink')}
                         </Link>
                     </div>
                 </CardFooter>

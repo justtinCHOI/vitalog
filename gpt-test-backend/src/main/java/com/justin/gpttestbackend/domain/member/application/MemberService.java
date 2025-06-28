@@ -7,6 +7,7 @@ import com.justin.gpttestbackend.domain.member.dto.MemberResponse;
 import com.justin.gpttestbackend.domain.member.repository.MemberRepository;
 import com.justin.gpttestbackend.global.config.security.SecurityUtils;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,13 @@ public class MemberService {
         Member patient = memberRepository.findByInvitationCode(invitationCode)
                 .orElseThrow(() -> new RuntimeException("유효하지 않은 초대 코드입니다."));
 
+        if (patient.getInvitationCodeExpiresAt() != null && patient.getInvitationCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            patient.setInvitationCode(null);
+            throw new RuntimeException("초대 코드가 만료되었습니다. 새 코드를 요청하세요.");
+        }
+
         patient.addPartner(partner);
+        patient.setInvitationCode(null);
     }
 
     private String generateUniqueCode() {

@@ -102,8 +102,8 @@ public class ChatService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public ChatAnalysisResponse analyzeChats(Long projectId) {
+    @Transactional
+    public ChatAnalysisResponse analyzeChats(Long projectId, String language) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROJECT));
 
@@ -112,7 +112,7 @@ public class ChatService {
                 .map(chat -> chat.getName() + ": " + chat.getMessage())
                 .collect(Collectors.joining("\n"));
 
-        ChatGPTRequest request = createChatAnalysisRequest(chatHistory);
+        ChatGPTRequest request = createChatAnalysisRequest(chatHistory, language);
         ChatGPTResponse response = chatGPTClient.call(request);
 
         try {
@@ -131,8 +131,12 @@ public class ChatService {
         }
     }
 
-    private ChatGPTRequest createChatAnalysisRequest(String chatHistory) {
+    private ChatGPTRequest createChatAnalysisRequest(String chatHistory, String language) {
         String systemMessage = "You are a conversation analysis expert. Analyze the following conversation and provide a summary, key topics, and sentiment analysis for each speaker. Please provide the output in a JSON format matching the given schema.";
+
+        if (language != null && !language.isEmpty() && !language.equalsIgnoreCase("default")) {
+            systemMessage += " Please provide the output in " + language + ".";
+        }
 
         ChatGPTRequest.Schema schema = new ChatGPTRequest.Schema(
                 "object",

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LogOut, PlusCircle, User } from 'lucide-react';
+import { LogOut, PlusCircle, User, Settings } from 'lucide-react';
 import withAuth from '@/shared/UI/withAuth';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useGetProjectsQuery } from '@/shared/hook/query/useGetProjectsQuery';
@@ -64,6 +64,12 @@ function HomePage() {
                             <Link href="/profile">
                                 <User className="mr-2 h-4 w-4" />
                                 Profile
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" asChild>
+                            <Link href="/settings">
+                                <Settings className="mr-2 h-4 w-4" />
+                                Settings
                             </Link>
                         </Button>
                         <Button variant="outline" onClick={logout}>

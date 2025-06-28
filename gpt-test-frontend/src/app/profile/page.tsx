@@ -18,11 +18,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/UI/form';
 import { Input } from '@/shared/UI/input';
 import { Skeleton } from '@/shared/UI/skeleton';
+import { useToast } from '@/shared/UI/toast/use-toast';
 
 function ProfilePage() {
     const { data: memberInfo, isLoading, isError } = useGetMemberInfoQuery();
     const generateCodeMutation = useGenerateCodeMutation();
     const registerPatientMutation = useRegisterPatientMutation();
+    const { toast } = useToast();
 
     const form = useForm<z.infer<typeof registerPatientSchema>>({
         resolver: zodResolver(registerPatientSchema),
@@ -33,6 +35,15 @@ function ProfilePage() {
 
     const handleGenerateCode = () => {
         generateCodeMutation.mutate();
+    };
+
+    const handleCopyCode = (code: string) => {
+        navigator.clipboard.writeText(code).then(() => {
+            toast({
+                title: 'Copied!',
+                description: 'Invitation code has been copied to your clipboard.',
+            });
+        });
     };
 
     function onRegisterPatient(data: z.infer<typeof registerPatientSchema>) {
@@ -113,9 +124,12 @@ function ProfilePage() {
                                     Generate Code
                                 </Button>
                                 {generateCodeMutation.invitationCode && (
-                                    <p className="rounded-md bg-muted px-4 py-2 font-mono text-sm">
+                                    <div
+                                        className="cursor-pointer rounded-md bg-muted px-4 py-2 font-mono text-sm transition-colors hover:bg-muted/80"
+                                        onClick={() => handleCopyCode(generateCodeMutation.invitationCode!)}
+                                    >
                                         {generateCodeMutation.invitationCode}
-                                    </p>
+                                    </div>
                                 )}
                             </div>
                         </div>

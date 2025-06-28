@@ -1,0 +1,13 @@
+{
+    "login": {
+        "title": "Iniciar sesión",
+        "description": "Ingrese su nombre de usuario a continuación para iniciar sesión en su cuenta.",
+        "usernameLabel": "Nombre de usuario",
+        "usernamePlaceholder": "tu_nombre_de_usuario",
+        "passwordLabel": "Contraseña",
+        "passwordPlaceholder": "••••••••",
+        "signInButton": "Iniciar sesión",
+        "signUpPrompt": "¿No tienes una cuenta?",
+        "signUpLink": "Regístrate"
+    }
+} 
