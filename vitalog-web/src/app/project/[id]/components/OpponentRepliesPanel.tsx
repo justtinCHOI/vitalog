@@ -1,33 +1,85 @@
 'use client';
 
-import { Users } from 'lucide-react';
+import { useState } from 'react';
+import { RefreshCw, Copy } from 'lucide-react';
 
+import { Button } from '@/shared/UI/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/UI/card';
-
-const mockReplies = [
-    { id: 1, text: '상대의 첫 번째 예상 답변입니다.' },
-    { id: 2, text: '상대의 두 번째 예상 답변입니다. 이것도 조금 더 깁니다.' },
-    { id: 3, text: '상대의 세 번째 예상 답변입니다.' },
-];
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/UI/select';
+import { Skeleton } from '@/shared/UI/skeleton';
+import { useToast } from '@/shared/UI/toast/use-toast';
 
 export function OpponentRepliesPanel() {
-    // In a real implementation, you would use a query hook like this:
-    // const { data: replies, isLoading } = useGetOpponentRepliesQuery(projectId);
+    const [tone, setTone] = useState('analysis');
+    const [isLoading, setIsLoading] = useState(false);
+    const [replies, setReplies] = useState<string[]>([]);
+    const { toast } = useToast();
+
+    const handleRefresh = () => {
+        setIsLoading(true);
+        // Mock API call
+        setTimeout(() => {
+            setReplies([
+                `This is a new opponent ${tone} reply 1.`,
+                `This is a new opponent ${tone} reply 2.`,
+                `This is a new opponent ${tone} reply 3.`,
+            ]);
+            setIsLoading(false);
+        }, 1500);
+    };
+
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            toast({
+                title: 'Copied to clipboard!',
+                description: 'The suggested reply has been copied.',
+            });
+        });
+    };
 
     return (
         <Card className="mt-4">
             <CardHeader>
-                <CardTitle className="flex items-center">
-                    <Users className="mr-2 h-5 w-5 text-blue-400" />
-                    상대의 예상 답변
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <CardTitle>상대의 예상 답변</CardTitle>
+                        <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        </Button>
+                    </div>
+                    <Select value={tone} onValueChange={setTone}>
+                        <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Select a tone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="analysis">분석</SelectItem>
+                            <SelectItem value="empathy">공감</SelectItem>
+                            <SelectItem value="humor">유머</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </CardHeader>
             <CardContent className="space-y-3">
-                {mockReplies.map((reply) => (
-                    <div key={reply.id} className="cursor-pointer rounded-lg bg-muted p-3 transition-all hover:bg-muted/80">
-                        <p className="text-sm">{reply.text}</p>
-                    </div>
-                ))}
+                {isLoading ? (
+                    <>
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-2/3" />
+                    </>
+                ) : replies.length > 0 ? (
+                    replies.map((reply, index) => (
+                        <div
+                            key={index}
+                            className="group flex cursor-pointer items-center justify-between rounded-lg bg-muted p-3 transition-colors hover:bg-muted/80"
+                            onClick={() => handleCopy(reply)}
+                        >
+                            <p className="text-sm">{reply}</p>
+                            <Copy className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-sm text-muted-foreground">Click the refresh button to generate replies.</p>
+                )}
             </CardContent>
         </Card>
     );
