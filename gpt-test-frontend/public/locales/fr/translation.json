@@ -1,0 +1,13 @@
+{
+    "login": {
+        "title": "Login",
+        "description": "Enter your username below to login to your account.",
+        "usernameLabel": "Username",
+        "usernamePlaceholder": "your_username",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "••••••••",
+        "signInButton": "Sign In",
+        "signUpPrompt": "Don't have an account?",
+        "signUpLink": "Sign up"
+    }
+} 

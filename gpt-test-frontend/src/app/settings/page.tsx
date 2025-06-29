@@ -18,8 +18,8 @@ import {
 import { useSettingsStore, GptLanguage } from '@/shared/store/useSettingsStore';
 
 function SettingsPage() {
-    const { setTheme } = useTheme();
-    const { i18n } = useTranslation();
+    const { theme, setTheme } = useTheme();
+    const { t, i18n } = useTranslation();
     const { gptLanguage, setGptLanguage } = useSettingsStore();
 
     const handleGptLanguageChange = (lang: GptLanguage) => {
@@ -44,7 +44,7 @@ function SettingsPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline">
-                                    <span>Select Theme</span>
+                                    <span className="capitalize">{theme}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -65,8 +65,11 @@ function SettingsPage() {
                         <p className="text-sm text-muted-foreground mb-2">Select the display language.</p>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline">
-                                    <span>Select Language</span>
+                                <Button variant="outline" className="w-[120px]">
+                                    {i18n.language === 'en' && 'English'}
+                                    {i18n.language === 'ko' && '한국어'}
+                                    {i18n.language === 'es' && 'Español'}
+                                    {i18n.language === 'fr' && 'Français'}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -78,6 +81,9 @@ function SettingsPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => i18n.changeLanguage('es')}>
                                     Español
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => i18n.changeLanguage('fr')}>
+                                    Français
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
