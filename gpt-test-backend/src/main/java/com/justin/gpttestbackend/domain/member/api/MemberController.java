@@ -3,6 +3,7 @@ package com.justin.gpttestbackend.domain.member.api;
 import com.justin.gpttestbackend.domain.member.application.MemberService;
 import com.justin.gpttestbackend.domain.member.dto.InvitationCodeRequest;
 import com.justin.gpttestbackend.domain.member.dto.MemberResponse;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,11 @@ public class MemberController {
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMyInfo() {
         return ResponseEntity.ok(memberService.getMyInfo());
+    }
+
+    @GetMapping("/me/connections")
+    public ResponseEntity<List<MemberResponse>> getConnections() {
+        return ResponseEntity.ok(memberService.getConnections());
     }
 
     @PostMapping("/me/invitation-code")

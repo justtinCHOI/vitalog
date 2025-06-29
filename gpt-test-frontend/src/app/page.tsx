@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { LogOut, PlusCircle, User, Settings } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import withAuth from '@/shared/UI/withAuth';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useGetProjectsQuery } from '@/shared/hook/query/useGetProjectsQuery';
@@ -15,6 +16,14 @@ function HomePage() {
     const logout = useAuthStore((state) => state.logout);
     const { data: projects, isLoading, isError, refetch } = useGetProjectsQuery();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const queryClient = useQueryClient();
+
+    const handleLogout = () => {
+        logout();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('auth-storage');
+        queryClient.clear();
+    };
 
     const renderProjects = () => {
         if (isLoading) {
@@ -72,7 +81,7 @@ function HomePage() {
                                 Settings
                             </Link>
                         </Button>
-                        <Button variant="outline" onClick={logout}>
+                        <Button variant="outline" onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />
                             Logout
                         </Button>

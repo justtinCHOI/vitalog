@@ -9,5 +9,10 @@
         "signInButton": "Iniciar sesión",
         "signUpPrompt": "¿No tienes una cuenta?",
         "signUpLink": "Regístrate"
+    },
+    "dropzone": {
+        "active": "Suelta los archivos aquí...",
+        "inactive": "Arrastra y suelta algunos archivos aquí, o haz clic para seleccionar archivos",
+        "fileTypes": "Solo archivos .csv o .txt"
     }
 } 

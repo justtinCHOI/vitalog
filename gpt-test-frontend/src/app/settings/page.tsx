@@ -17,6 +17,13 @@ import {
 } from '@/shared/UI/dropdown-menu';
 import { useSettingsStore, GptLanguage } from '@/shared/store/useSettingsStore';
 
+const languageNames: Record<string, string> = {
+    en: 'English',
+    ko: '한국어',
+    es: 'Español',
+    fr: 'Français',
+};
+
 function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
@@ -66,10 +73,7 @@ function SettingsPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="w-[120px]">
-                                    {i18n.language === 'en' && 'English'}
-                                    {i18n.language === 'ko' && '한국어'}
-                                    {i18n.language === 'es' && 'Español'}
-                                    {i18n.language === 'fr' && 'Français'}
+                                    {languageNames[i18n.language] || 'Select Language'}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">

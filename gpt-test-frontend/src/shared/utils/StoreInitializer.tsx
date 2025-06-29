@@ -1,16 +1,15 @@
 'use client';
 
+import { useRef } from 'react';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { useEffect } from 'react';
 
 function StoreInitializer() {
-  const initialize = useAuthStore((state) => state.initialize);
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  return null;
+    const initialized = useRef(false);
+    if (!initialized.current) {
+        useAuthStore.getState().setHasHydrated(useAuthStore.persist.hasHydrated());
+        initialized.current = true;
+    }
+    return null;
 }
 
 export default StoreInitializer; 

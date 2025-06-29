@@ -3,7 +3,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Bot, FileUp, Loader2, ChevronsRight } from 'lucide-react';
+import { ArrowLeft, Bot, FileUp, Loader2, ChevronsRight, Pencil, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -12,6 +12,7 @@ import { Button } from '@/shared/UI/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/UI/card';
 import { DataTable } from '@/shared/UI/data-table';
 import { Dropzone } from '@/shared/UI/dropzone';
+import { Input } from '@/shared/UI/input';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/shared/UI/resizable';
 import { ScrollArea } from '@/shared/UI/scroll-area';
 import { Skeleton } from '@/shared/UI/skeleton';
@@ -19,20 +20,26 @@ import { useGetProjectDetailsQuery, ProjectDetails } from '@/shared/hook/query/u
 import { useGetChatsQuery, Chat } from '@/shared/hook/query/useGetChatsQuery';
 import { useUploadChatsMutation } from '@/shared/hook/mutation/useUploadChatsMutation';
 import { useAnalyzeChatMutation } from '@/shared/hook/mutation/useAnalyzeChatMutation';
+import { useUpdateProjectMutation } from '@/shared/hook/mutation/useUpdateProjectMutation';
+import { MyRepliesPanel } from './components/MyRepliesPanel';
+import { OpponentRepliesPanel } from './components/OpponentRepliesPanel';
 
 const chatTableColumns: ColumnDef<Chat>[] = [
     {
         accessorKey: 'name',
         header: 'Name',
+        size: 100,
     },
     {
         accessorKey: 'message',
         header: 'Message',
+        size: 400,
     },
     {
         accessorKey: 'date',
         header: 'Date',
         cell: ({ row }) => new Date(row.original.date).toLocaleString(),
+        size: 150,
     },
 ];
 
@@ -40,11 +47,15 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
     const queryClient = useQueryClient();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedSummary, setSelectedSummary] = useState<ProjectDetails['summaries'][0] | null>(null);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editingName, setEditingName] = useState('');
+    const [showAllSummaries, setShowAllSummaries] = useState(false);
 
     const { data: project, isLoading: isLoadingProject, isError: isErrorProject } = useGetProjectDetailsQuery(projectId);
     const { data: chats, isLoading: isLoadingChats, isError: isErrorChats } = useGetChatsQuery(projectId);
     const uploadMutation = useUploadChatsMutation(projectId);
     const analyzeMutation = useAnalyzeChatMutation(projectId);
+    const updateProjectMutation = useUpdateProjectMutation(projectId);
     
     const handleFileDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
@@ -69,16 +80,42 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
         }
     };
 
+    const handleStartEditingName = () => {
+        if (project) {
+            setIsEditingName(true);
+            setEditingName(project.name);
+        }
+    };
+
+    const handleCancelEditingName = () => {
+        setIsEditingName(false);
+    };
+
+    const handleSaveName = () => {
+        if (editingName.trim()) {
+            updateProjectMutation.mutate(editingName, {
+                onSuccess: () => {
+                    setIsEditingName(false);
+                },
+            });
+        }
+    };
+
+    const sortedSummaries = useMemo(() => {
+        if (!project?.summaries) return [];
+        return [...project.summaries].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    }, [project?.summaries]);
+
     const analysisResult = useMemo(() => {
         if (analyzeMutation.data?.summary) return analyzeMutation.data.summary;
-        if(selectedSummary) return selectedSummary.content;
-        if(project?.summaries && project.summaries.length > 0) {
-             // select the most recent one by default
-            const sortedSummaries = [...project.summaries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        if (selectedSummary) return selectedSummary.content;
+        if (sortedSummaries.length > 0) {
             return sortedSummaries[0].content;
         }
         return 'No analysis available. Click "Analyze Chat" to generate one.';
-    }, [analyzeMutation.data, selectedSummary, project]);
+    }, [analyzeMutation.data, selectedSummary, sortedSummaries]);
 
     if (isLoadingProject) {
         return (
@@ -106,7 +143,27 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
                         Back to Home
                     </Link>
                 </Button>
-                <h1 className="text-xl font-bold">{project?.name}</h1>
+                {isEditingName ? (
+                    <div className="flex items-center gap-2">
+                        <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="text-xl font-bold"
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                        />
+                        <Button variant="ghost" size="icon" onClick={handleSaveName} disabled={updateProjectMutation.isPending}>
+                            <Check className="h-5 w-5 text-green-500" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={handleCancelEditingName}>
+                            <X className="h-5 w-5 text-red-500" />
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="group flex cursor-pointer items-center gap-2" onClick={handleStartEditingName}>
+                        <h1 className="text-xl font-bold">{project?.name}</h1>
+                        <Pencil className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    </div>
+                )}
                 <div className="flex items-center space-x-2">
                     <Button onClick={handleUpload} disabled={!selectedFile || uploadMutation.isPending}>
                         {uploadMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
@@ -124,23 +181,63 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
                     <ResizablePanel defaultSize={20}>
                         <Card className="h-full rounded-none border-0 border-r">
                             <CardHeader>
-                                <CardTitle>Summary History</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle>Summary History</CardTitle>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAnalyze}
+                                        disabled={analyzeMutation.isPending || !chats || chats.length === 0}
+                                    >
+                                        <Bot className="mr-2 h-4 w-4" />
+                                        New Summary
+                                    </Button>
+                                </div>
                                 <CardDescription>Select a past summary to view.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ScrollArea className="h-[calc(100vh-150px)]">
+                                <ScrollArea className="h-[calc(100vh-170px)]">
                                     <ul>
-                                        {project?.summaries.map((summary) => (
-                                            <li
-                                                key={summary.id}
-                                                className="p-2 hover:bg-muted cursor-pointer rounded flex justify-between items-center"
-                                                onClick={() => setSelectedSummary(summary)}
-                                            >
-                                                <span className='text-sm'>Summary from {new Date(summary.createdAt).toLocaleString()}</span>
-                                                <ChevronsRight className="h-4 w-4 text-muted-foreground" />
-                                            </li>
-                                        ))}
+                                        {sortedSummaries
+                                            .slice(0, showAllSummaries ? sortedSummaries.length : 5)
+                                            .map((summary) => (
+                                                <li
+                                                    key={summary.id}
+                                                    className={`p-2 hover:bg-muted cursor-pointer rounded flex justify-between items-center ${
+                                                        selectedSummary?.id === summary.id ||
+                                                        (!selectedSummary &&
+                                                            sortedSummaries[0]?.id === summary.id)
+                                                            ? 'bg-muted'
+                                                            : ''
+                                                    }`}
+                                                    onClick={() => setSelectedSummary(summary)}
+                                                >
+                                                    <span className="text-sm">
+                                                        Summary from {new Date(summary.createdAt).toLocaleString()}
+                                                    </span>
+                                                    <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+                                                </li>
+                                            ))}
                                     </ul>
+                                    {sortedSummaries.length > 5 && (
+                                        <Button
+                                            variant="link"
+                                            className="mt-2"
+                                            onClick={() => setShowAllSummaries(!showAllSummaries)}
+                                        >
+                                            {showAllSummaries ? (
+                                                <>
+                                                    <ChevronUp className="mr-2 h-4 w-4" />
+                                                    Show less
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ChevronDown className="mr-2 h-4 w-4" />
+                                                    Show more
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
                                 </ScrollArea>
                             </CardContent>
                         </Card>
@@ -149,19 +246,21 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
                     <ResizableHandle withHandle />
 
                     <ResizablePanel defaultSize={50}>
-                         <Card className="h-full rounded-none border-0">
+                        <Card className="h-full rounded-none border-0">
                             <CardHeader>
                                 <CardTitle>Chat Log</CardTitle>
                                 <Dropzone onDrop={handleFileDrop} />
                             </CardHeader>
                             <CardContent>
-                                {isLoadingChats ? (
-                                    <Skeleton className="h-[calc(100vh-250px)] w-full" />
-                                ) : isErrorChats ? (
-                                    <p className='text-destructive'>Failed to load chats.</p>
-                                ) : (
-                                    <DataTable columns={chatTableColumns} data={chats || []} />
-                                )}
+                                <ScrollArea className="h-[calc(100vh-250px)]">
+                                    {isLoadingChats ? (
+                                        <Skeleton className="h-full w-full" />
+                                    ) : isErrorChats ? (
+                                        <p className="text-destructive">Failed to load chats.</p>
+                                    ) : (
+                                        <DataTable columns={chatTableColumns} data={chats || []} />
+                                    )}
+                                </ScrollArea>
                             </CardContent>
                         </Card>
                     </ResizablePanel>
@@ -169,16 +268,20 @@ function ProjectDetailView({ projectId }: { projectId: string }) {
                     <ResizableHandle withHandle />
 
                     <ResizablePanel defaultSize={30}>
-                        <Card className="h-full rounded-none border-0 border-l">
-                            <CardHeader>
-                                <CardTitle>Analysis Result</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ScrollArea className="h-[calc(100vh-150px)]">
+                        <ScrollArea className="h-screen">
+                            <Card className="h-auto rounded-none border-0 border-l">
+                                <CardHeader>
+                                    <CardTitle>Analysis Result</CardTitle>
+                                </CardHeader>
+                                <CardContent>
                                     <p className="whitespace-pre-wrap">{analysisResult}</p>
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                            <div className="p-4 pt-0">
+                                <MyRepliesPanel />
+                                <OpponentRepliesPanel />
+                            </div>
+                        </ScrollArea>
                     </ResizablePanel>
                 </ResizablePanelGroup>
             </main>

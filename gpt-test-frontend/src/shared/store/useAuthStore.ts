@@ -1,33 +1,43 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 type State = {
   token: string | null;
   isAuthenticated: boolean;
+  _hasHydrated: boolean;
 };
 
 type Actions = {
   login: (token: string) => void;
   logout: () => void;
-  initialize: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 };
 
-export const useAuthStore = create<State & Actions>((set) => ({
-  token: null,
-  isAuthenticated: false,
-  login: (token: string) => {
-    localStorage.setItem('accessToken', token);
-    set({ token, isAuthenticated: true });
-  },
-  logout: () => {
-    localStorage.removeItem('accessToken');
-    set({ token: null, isAuthenticated: false });
-  },
-  initialize: () => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
+export const useAuthStore = create<State & Actions>()(
+  persist(
+    (set) => ({
+      token: null,
+      isAuthenticated: false,
+      _hasHydrated: false,
+      login: (token: string) => {
         set({ token, isAuthenticated: true });
-      }
+      },
+      logout: () => {
+        set({ token: null, isAuthenticated: false });
+      },
+      setHasHydrated: (hasHydrated) => {
+        set({
+          _hasHydrated: hasHydrated,
+        });
+      },
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+      partialize: (state) => ({ token: state.token, isAuthenticated: state.isAuthenticated }),
     }
-  },
-})); 
+  )
+); 

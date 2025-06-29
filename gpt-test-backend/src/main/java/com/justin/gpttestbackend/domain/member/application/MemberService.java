@@ -8,6 +8,9 @@ import com.justin.gpttestbackend.domain.member.repository.MemberRepository;
 import com.justin.gpttestbackend.global.config.security.SecurityUtils;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +69,26 @@ public class MemberService {
 
         patient.addPartner(partner);
         patient.setInvitationCode(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberResponse> getConnections() {
+        Long currentMemberId = SecurityUtils.getCurrentMemberId()
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        Member member = memberRepository.findById(currentMemberId)
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        if (member.getRole() == Role.PATIENT) {
+            return member.getPartners().stream()
+                    .map(MemberResponse::from)
+                    .collect(Collectors.toList());
+        } else if (member.getRole() == Role.PARTNER) {
+            return member.getPatients().stream()
+                    .map(MemberResponse::from)
+                    .collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
     }
 
     private String generateUniqueCode() {

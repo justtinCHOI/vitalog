@@ -8,6 +8,11 @@
         "passwordPlaceholder": "••••••••",
         "signInButton": "Sign In",
         "signUpPrompt": "Don't have an account?",
-        "signUpLink": "Sign up"
+        "signUpLink": "Inscrivez-vous"
+    },
+    "dropzone": {
+        "active": "Déposez les fichiers ici...",
+        "inactive": "Glissez-déposez des fichiers ici, ou cliquez pour sélectionner des fichiers",
+        "fileTypes": "Fichiers .csv ou .txt uniquement"
     }
 } 

@@ -1,4 +1,7 @@
+'use client';
+
 import { useDropzone } from 'react-dropzone';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/utils';
 import { UploadCloud } from 'lucide-react';
 
@@ -8,6 +11,7 @@ interface DropzoneProps {
 }
 
 export function Dropzone({ onDrop, className }: DropzoneProps) {
+    const { t } = useTranslation();
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
@@ -28,9 +32,9 @@ export function Dropzone({ onDrop, className }: DropzoneProps) {
             <input {...getInputProps()} />
             <UploadCloud className="h-10 w-10 text-muted-foreground" />
             <p className="mt-4 text-muted-foreground">
-                {isDragActive ? 'Drop the files here ...' : "Drag 'n' drop some files here, or click to select files"}
+                {isDragActive ? t('dropzone.active') : t('dropzone.inactive')}
             </p>
-            <p className="text-xs text-muted-foreground/80">.csv or .txt files only</p>
+            <p className="text-xs text-muted-foreground/80">{t('dropzone.fileTypes')}</p>
         </div>
     );
 } 
